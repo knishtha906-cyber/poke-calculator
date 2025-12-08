@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Pokedex Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+
+        body{
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pokedex{
+            display: flex;
+            width: 800px;
+            height: 580px;
+            margin: 40px auto;
+            border: 2px solid #000;
+            border-radius: 20px;  /*Rounded corners*/
+            background: #d62828;  /*Pokedex red*/ 
+            overflow: hidden;    /*Keeps corners clean*/
+            box-shadow:
+                0 0 20px rgba(255, 100, 100, 0.6),
+                0 0 40px rgba(255, 50, 50, 0.4),
+                inset 0 0 20px rgba(255, 120, 120, 0.3);
+
+        }
+
+        .left-panel, .right-panel{
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .left-panel{
+            background: #e63946;  /*Slighlty lighter red*/
+            border-right: 3px solid #000;
+            padding: 20px
+        }
+
+        .right-panel{
+            background: #1d3557;   /*Dark blue for greninja theme*/
+            color: white;
+        }
+
+
+        .calc-display{
+            height: 80px;
+            border: 2px solid #6fe7ff;
+            border-radius: 10px;
+            background: #0a0f18;
+            margin-bottom: 10px;
+
+            /*glowing effect*/
+            box-shadow:
+             0 0 10px #6fe7ff,
+             inset 0 0 15px #0ff;
+
+            /*grid scanline effect*/
+            background-image:
+              linear-gradient(
+                rgba(0, 255, 255, 0,05) 2px,
+                transparent 2px
+              );
+            background-size: 100% 4px;
+
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            padding-right: 15px;
+            font-size: 28px;
+            font-family: 'Press Start 2P', monospace;
+            color: #6fe7ff;
+        } 
+
+        .calc-buttons{
+            flex: 1;
+            border: 2px dashed #000;
+            border-radius: 10px;
+            padding: 15px;  /*gives the buttons room*/
+
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 12px;   /*more space between buttons*/
+
+        }
+
+
+        .calc-buttons button{
+            width: 100%;
+            height: 55px;
+            font-size: 16px;
+            font-family: 'Press Start 2P',monospace;
+            letter-spacing: 1px;
+        
+
+            background: linear-gradient(#f1faee, #dfe6e9);
+            border: 3px solid #000;
+            border-radius: 10px;
+
+            box-shadow:
+              0 4px 0 #000,  /*thick drop shadow below*/
+              inset 0 2px 2px #fff; /*subtle inner shine*/
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: all 0.1s ease-in-out;
+
+        }
+
+        .calc-buttons button:active{
+            transform: translateY(3px);
+            box-shadow:
+             0 1px 0 #000,
+             inset 0 1px 1px #ccc;
+            background: linear-gradient(#dfe6e9, #cfcfcf);
+        }
+
+        .calc-buttons button:hover{
+            box-shadow:
+             0 4px 0 #000,
+             inset 0 2px 2px #fff,
+             0 0 8px #00eaff;
+        }
+
+            @keyframes screenGlow{
+                0%{box-shadow: inset 0 0 30px rgba(0,255,25,0.35);}
+                50%{box-shadow: inset 0 0 48px(0, 255, 255, 0.5);}
+                100%{box-shadow: inset 0 0 30px rgba(0, 255, 255, 0.35);}
+            }
+
+        
+        .pokemon-container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100%;
+            width: 100%;
+            padding-top: 10px;
+            background: #0a1d37;  /*Deep blue screen*/
+            border: 2px solid #6fe7ff;   /*Cyan borders*/
+            border-radius: 10px;
+            text-align: center;
+
+            box-shadow:
+             0 0 12px #6fe77f,
+             inset 0 0 25px rgba(0, 255, 255, 0.4);
+
+            background-image:
+             linear-gradient(
+                rgba(0, 255, 255, 0.08) 2px,
+                transparent 2px
+                );
+            background-size: 100% 4px;
+
+            position: relative;
+            overflow: hidden;
+            animation: screenGlow 2s ease-in-out infinite;
+        }
+        
+        .pokemonSprite{
+            width: 330px;
+            height:auto;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            margin-top: -120px;
+            margin-bottom: 10px;
+            animation: float 2.8s ease-in-out infinite;
+            animation: glowPulse 2.2s ease-in-out infinite;
+            animation: tilt 3.5s ease-in-out infinite;
+            position: relative;
+            display: inline-block;
+            
+        }
+
+        .pokemonSprite::after{
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                rgba(255,255,255,0.15),
+                rgba(255,255,255,0),
+            );
+            pointer-events: none;
+            animation: scanline 4s linear infinite;
+        }
+
+        @keyframes scanline{
+            0%{top: -100%;}
+            100%{top: 120%;}
+        }
+
+        .pokedex-lens{
+            width: 60px;
+            height: 60px;
+            background: #1d3557;
+            border: 4px solid #000;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        /*LED lights conatiner*/
+        .pokedex-lights{
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        /*Individual LED lights*/
+        .pokedex-lights .light{
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid #000;
+        }
+
+        @keyframes ledPulse{
+            0%{box-shadow: 0 0 3px #ff4b4b;}
+            50%{box-shadow: 0 0 12px #ff8080;}
+            100%{box-shadow: 0 0 3px #ff4b4b;}
+        }
+
+        .light.red{
+             background: #ff4b4b;
+             animation: ledPulse 1.5s infinite;
+            }
+
+        .light.yellow{
+            background: #ffd447;
+            animation: ledPulse 1.5s infinite;
+        }
+
+        .light.green{
+            background: #65ff65;
+            animation: ledPulse 1.5s infinite;
+        }
+
+        .hinge{
+            width: 25px;  /*Thickness*/
+            background: #9d0208;
+            border-left: 3px solid #000;
+            border-right: 3px solid #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hinge-bolt{
+            width: 12px;
+            height: 12px;
+            background: #000;
+            border-radius: 50%;
+            margin: 10px 0;
+        }
+
+        #bg-video{
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width:auto;
+            height:auto;
+            transform: translate(-50%,-50%);
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(65%) blur(1px);
+        }
+
+        body{
+            background: linear-gradient(135deg,#1e3a8a 0%, #3b82f6 100%);  
+            margin: 0px;
+            padding: 0px;
+            min-height: 100vh;    
+        }
+
+        
+        #pokemon-info{
+            margin-top: -90px;
+            text-align: center;
+            color: #6fe7ff;
+            font-family:'Press Start 2P', monospace;
+            padding: 0 20px;
+            width: 100%;
+            box-sizing: border-box;
+
+            text-shadow:
+              0 0 4px #6fe7ff,
+              0 0 8px #6fe7ff,
+              0 0 12px #4cdfff;
+        }
+        
+        #pokemon-info h2{
+            font-size: 18px;
+            margin: 5px 0 2px 0;
+            letter-spacing: 2px;
+
+        }  
+        
+        #pokemon-info p{
+            font-size: 18px;
+            margin: 4px 0 10px 0;
+            text-shadow: 0 0 4px #00eaff,
+                         0 0 8px #6fe7ff,
+                         0 0 12px #4cdfff;
+
+            letter-spacing: 1px;
+        }
+
+
+        #stats{
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-weight: bold;
+            color: #6fe7ff;
+            width: 117px;   /* locks the label in place */
+            text-align: left;
+        }
+
+        .stat-value{
+            color: #6fe7ff;
+            width: 47px;
+            text-align: right;
+            margin-right: 17px;
+        }
+
+        .stat-bar {
+            flex-grow: 1;
+            height: 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-left: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.8s ease-out;
+        }
+                
+
+        @keyframes float{
+            0%{transform: translateY(0);}
+            50%{transform: translateY(-12px);}
+            100%{ transform: translateY(0);}
+        }
+
+        @keyframes glowPulse{
+            0%{filter: drop-shadow(0 0 4px #6fe7ff);}
+            50%{filter: drop-shadow(0 0 12px #6fe7ff);}
+            100%{filter: drop-shadow(0 0 4px #6fe7ff);}
+        }
+
+        @keyframes tilt{
+            0%{transform: rotate(0deg) translateY(0);}
+            50%{transform: rotate(1deg) translateY(-8px);}
+            100%{transform: rotate(0deg) translateY(0);}
+        }
+
+        .pokemon-container::before{
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #6fe7ff;
+            border-radius: 50%;
+            top: 40%;
+            left: 20%;
+            opacity: 0;
+            animation: sparkle 2s infinite ease-in-out;
+        }
+
+        .pokemon-container::after{
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #6fe7ff;
+            border-radius: 50%;
+            top: 70%;
+            left: 70%;
+            opacity: 0;
+            animation: sparkle 3s infinite ease-in-out 1s;
+        }
+
+        @keyframes sparkle{
+            0%{opacity: 0; transform: scale(1);}
+            50%{opacity: 1; transform: scale(2);}
+            100%{opacity: 0; transform: scale(1);}
+        }
+
+        /* RESPONSIVE BREAKPOINTS */
+
+        /* Tablets and smaller laptops (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .pokedex {
+                width: 95%;
+            }
+        }
+
+        /* Large tablets in portrait mode (600px - 768px) */
+        @media (max-width: 768px) {
+            .pokedex {
+                flex-direction: column;
+                width: 100%;
+                height: auto;
+                max-width: 500px;
+            }
+
+            .left-panel {
+                border-right: none;
+                border-bottom: 3px solid #000;
+            }
+
+            .hinge {
+                width: 100%;
+                height: 20px;
+                flex-direction: row;
+                border-left: none;
+                border-right: none;
+                border-top: 3px solid #000;
+                border-bottom: 3px solid #000;
+            }
+
+            .hinge-bolt {
+                margin: 0 10px;
+            }
+
+            .pokemonSprite {
+                margin-top: -80px;
+            }
+        }
+
+        /* Mobile phones (less than 600px) */
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+
+            .pokedex {
+                border-radius: 15px;
+            }
+
+            .calc-display {
+                font-size: 20px;
+                padding-right: 10px;
+            }
+
+            .calc-buttons button {
+                font-size: 14px;
+                height: 50px;
+            }
+
+            #pokemon-info h2 {
+                font-size: 16px;
+            }
+
+            #pokemon-info p {
+                font-size: 11px;
+            }
+
+            .stat-row {
+                font-size: 10px;
+            }
+        }
+
+        /* Very small phones (less than 400px) */
+        @media (max-width: 400px) {
+            .calc-buttons button {
+                font-size: 12px;
+                height: 45px;
+            }
+
+            #pokemon-info h2 {
+                font-size: 14px;
+                letter-spacing: 1px;
+            }
+
+            #pokemon-info p {
+                font-size: 10px;
+            }
+        }
+        
+
+    </style>
+</head>
+<body>
+
+    <video autoplay muted loop id="bg-video">
+        <source src="bg.mov" type="video/mp4">
+    </video>
+
+<div class="pokedex">
+    <div class="left-panel">
+
+        <div class="pokedex-lens"></div>
+        <div class="pokedex-lights">
+            <span class="light red"></span>
+            <span class="light yellow"></span>
+            <span class="light green"></span>
+        </div>
+
+        <div class="calc-display" id="display"></div>
+        <div class="calc-buttons">
+            <button class="btn">DEL</button>
+            <button class="btn">C</button>
+            <button class="btn">%</button>
+            <button class="btn">÷</button>
+
+            <button class="btn">7</button>
+            <button class="btn">8</button>
+            <button class="btn">9</button>
+            <button class="btn">x</button>
+            
+            <button class="btn">4</button>
+            <button class="btn">5</button>
+            <button class="btn">6</button>
+            <button class="btn">-</button>
+            
+            <button class="btn">1</button>
+            <button class="btn">2</button>
+            <button class="btn">3</button>
+            <button class="btn">+</button>
+            
+            <button class="btn">0</button>
+            <button class="btn">.</button>
+            <button class="btn">=</button>
+        </div>
+    </div>
+
+    <div class="hinge">
+        <div class="hinge-bolt"></div>
+        <div class="hinge-bolt"></div>
+    </div>
+
+    <div class="right-panel">
+        <div class="pokemon-container">
+            <img src="greninja-new.png" class="pokemonSprite">
+            <div id="pokemon-info">
+                <h2 id="poke-name">GRENINJA</h2>
+                <p id="poke-type">TYPE: WATER / DARK</p>
+
+                <div id="stats">
+                    <div class="stat-row">
+                        <span class="stat-label">HP:</span>
+                        <span class="stat-value" id="hp-value">72</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" id="hp-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-row">
+                        <span class="stat-label">Attack:</span>
+                        <span class="stat-value" id="atk-value">95</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" id="atk-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-row">
+                        <span class="stat-label">Defense:</span>
+                        <span class="stat-value" id="def-value">67</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" id="def-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-row">
+                        <span class="stat-label">Speed:</span>
+                        <span class="stat-value" id="spd-value">122</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" id="spd-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                
+<script>
+const display = document.getElementById("display");
+const buttons = document.querySelectorAll(".btn");
+
+buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        let value = btn.textContent;
+
+        // CLEAR
+        if (value === "C") {
+            display.textContent = "";
+            return;
+        }
+
+        // DELETE (BACKSPACE)
+        if (value === "DEL") {
+            display.textContent = display.textContent.slice(0, -1);
+            return;
+        }
+
+        // EQUALS
+        if (value === "=") {
+            try {
+                let expression = display.textContent;
+
+                // Convert symbols before evaluating
+                expression = expression
+                    .replace(/x/g, "*")
+                    .replace(/÷/g, "/")
+                    .replace(/(\d+)%/g, "($1/100)");
+
+                display.textContent = eval(expression);
+            } catch {
+                display.textContent = "Error";
+            }
+            return;
+        }
+
+        // PERCENT (just add %, DO NOT calculate)
+        if (value === "%") {
+            display.textContent += "%";
+            return;
+        }
+
+        // DEFAULT: add button text
+        display.textContent += value;
+    });
+});
+
+// Load Pokemon data
+function loadPokemon(name) {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
+        .then(res => res.json())
+        .then(data => {
+            // NAME
+            document.getElementById("poke-name").textContent = data.name.toUpperCase();
+
+            // TYPE
+            let types = data.types.map(t => t.type.name).join(" / ");
+            document.getElementById("poke-type").textContent = "TYPE: " + types.toUpperCase();
+
+            // STATS
+            let stats = data.stats;
+            updateStat("hp", stats[0].base_stat);
+            updateStat("atk", stats[1].base_stat);
+            updateStat("def", stats[2].base_stat);
+            updateStat("spd", stats[5].base_stat);
+        })
+        .catch(err => console.log("Error loading Pokémon:", err));
+}
+
+function updateStat(statName, value) {
+    // Update text value
+    document.getElementById(`${statName}-value`).textContent = value;
+
+    // Calculate percentage (max stat typically 255, but showing relative to 180 for better visual)
+    let percent = Math.min((value / 180) * 100, 100);
+
+    const bar = document.getElementById(`${statName}-bar`);
+
+    // Reset animation
+    bar.style.width = "0%";
+
+    setTimeout(() => {
+        bar.style.width = percent + "%";
+    }, 50);
+}
+
+// Load Greninja on page load
+window.addEventListener('load', () => {
+    loadPokemon("greninja");
+});
+</script>
+
+</body>
+</html>
