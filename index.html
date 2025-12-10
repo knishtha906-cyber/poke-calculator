@@ -616,7 +616,9 @@
 <script>
 const display = document.getElementById("display");
 const buttons = document.querySelectorAll(".btn");
-
+functions fixFloat(num){
+    return Number(MAth.round(num+"e10")+"e-10");
+} 
 buttons.forEach(btn => {
     btn.addEventListener("click", () => {
         let value = btn.textContent;
@@ -645,7 +647,7 @@ buttons.forEach(btn => {
                     .replace(/(\d+)%/g, "($1/100)");
 
                 let result= eval(expression);
-                result=Number(result.toFixed(10));
+                result=fixFloat(result);
                 display.textContent=result;
             } catch {
                 display.textContent = "Error";
@@ -712,6 +714,7 @@ window.addEventListener('load', () => {
 </body>
 
 </html>
+
 
 
 
