@@ -644,7 +644,9 @@ buttons.forEach(btn => {
                     .replace(/÷/g, "/")
                     .replace(/(\d+)%/g, "($1/100)");
 
-                display.textContent = eval(expression);
+                let result= eval(expression);
+                result=Number(result.toFixed(10));
+                display.textContent=result;
             } catch {
                 display.textContent = "Error";
             }
@@ -710,5 +712,6 @@ window.addEventListener('load', () => {
 </body>
 
 </html>
+
 
 
