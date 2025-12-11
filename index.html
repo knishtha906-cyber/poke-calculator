@@ -616,8 +616,8 @@
 <script>
 const display = document.getElementById("display");
 const buttons = document.querySelectorAll(".btn");
-functions fixFloat(num){
-    return Number(MAth.round(num+"e10")+"e-10");
+function fixFloat(num){
+    return Number(Math.round(num+"e10")+"e-10");
 } 
 buttons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -714,6 +714,7 @@ window.addEventListener('load', () => {
 </body>
 
 </html>
+
 
 
 
